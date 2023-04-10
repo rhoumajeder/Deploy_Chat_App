@@ -1,5 +1,5 @@
 variable "cluster_name" {
-  default = "flask-app-cluster"
+  default = "Rocket-app-cluster"
 }
 
 variable "instance_type" {
