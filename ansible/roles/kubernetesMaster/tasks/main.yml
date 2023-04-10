@@ -22,12 +22,12 @@
     state: present
   when: result|success
 
-- name: Generate join command
-  shell: sudo kubeadm token create --print-join-command
-  register: join_command_output
+# - name: Generate join command
+#   shell: sudo kubeadm token create --print-join-command
+#   register: join_command_output
 
-- name: Store join command in a file
-  copy:
-    content: "{{ join_command_output.stdout }}"
-    dest: /tmp/k8s_join_command.txt
-  delegate_to: localhost
+# - name: Store join command in a file
+#   copy:
+#     content: "{{ join_command_output.stdout }}"
+#     dest: /tmp/k8s_join_command.txt
+#   delegate_to: localhost
