@@ -3,12 +3,12 @@ resource "aws_vpc" "this" {
   cidr_block = var.vpc_cidr_block
 
   tags = {
-    Name = "flask-app-vpc"
+    Name = "Rocket-app-vpc"
   }
 }
 
-resource "aws_security_group" "example" {
-  name        = "example"
+resource "aws_security_group" "rockatapp" {
+  name        = "rockatapp"
   description = "Allow SSH access"
 
   ingress {
@@ -47,16 +47,16 @@ resource "aws_security_group" "example" {
   
 }
 
-resource "aws_instance" "example" {
+resource "aws_instance" "rockatapp" {
   count = 3
   ami           = "ami-086df58ea1b1ad56a"
   instance_type = "t3.small"
   key_name      = "RjeKeys"
   
-  vpc_security_group_ids = [aws_security_group.example.id]
+  vpc_security_group_ids = [aws_security_group.rockatapp.id]
   
     tags = {
-    Name = "FlaskApp"
+    Name = "RockatApp"
   }
   
  
@@ -71,7 +71,7 @@ resource "aws_subnet" "this" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "flask-app-subnet"
+    Name = "rockat-app-subnet"
   }
   
 
@@ -80,11 +80,11 @@ resource "aws_subnet" "this" {
 }
 
  output "ip_address" {
-  #value = aws_instance.example.public_ip
+  #value = aws_instance.rockatapp.public_ip
   value = {
-    server_1 = aws_instance.example[0].public_ip
-    server_2 = aws_instance.example[1].public_ip
-    server_3 = aws_instance.example[2].public_ip
+    server_1 = aws_instance.rockatapp[0].public_ip
+    server_2 = aws_instance.rockatapp[1].public_ip
+    server_3 = aws_instance.rockatapp[2].public_ip
   }
   
  
@@ -92,34 +92,34 @@ resource "aws_subnet" "this" {
 
 }
 
-data "aws_route53_zone" "example" {
-  name         = "jedder.net."
-  private_zone = false
-}
+# data "aws_route53_zone" "rockatapp" {
+#   name         = "jedder.net."
+#   private_zone = false
+# }
 
-resource "aws_route53_record" "example" {
-  zone_id = data.aws_route53_zone.example.zone_id
-  name    = "jedder.net."
-  type    = "A"
-  ttl     = "300"
-  records = [aws_instance.example[0].public_ip]
+# resource "aws_route53_record" "rockatapp" {
+#   zone_id = data.aws_route53_zone.rockatapp.zone_id
+#   name    = "jedder.net."
+#   type    = "A"
+#   ttl     = "300"
+#   records = [aws_instance.rockatapp[0].public_ip]
 
-  lifecycle {
-    create_before_destroy = true
-  }
-}
+#   lifecycle {
+#     create_before_destroy = true
+#   }
+# }
 
-resource "aws_route53_record" "www_example" {
-  zone_id = data.aws_route53_zone.example.zone_id
-  name    = "www.jedder.net."
-  type    = "A"
-  ttl     = "300"
-  records = [aws_instance.example[0].public_ip]
+# resource "aws_route53_record" "www_rockatapp" {
+#   zone_id = data.aws_route53_zone.rockatapp.zone_id
+#   name    = "www.jedder.net."
+#   type    = "A"
+#   ttl     = "300"
+#   records = [aws_instance.rockatapp[0].public_ip]
 
-  lifecycle {
-    create_before_destroy = true
-  }
-}
+#   lifecycle {
+#     create_before_destroy = true
+#   }
+# }
 
 
 
