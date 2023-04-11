@@ -88,4 +88,82 @@ python app.py
 That's it! You now have a chat application running on a Kubernetes cluster using Terraform, AWS, and Ansible.
 
 
+16. Deploy Rocket Chat application
+
+sudo rsync -avz -e "ssh -i RjeKeys.pem" ../rocketChatKubernetes ubuntu@3.8.187.241:/home/ubuntu
+kubectl kustomize . | kubectl apply -f -
+kubectl -n rocket-chat get pods
+sudo kubectl -n rocket-chat get nodes -o wide && sudo kubectl -n rocket-chat get services
+
+
+17. Access the chat application via the public IP and the port
+
+18. Link with a domain name (optional)
+
+
+sudo nano /etc/nginx/sites-available/jedder.net
+
+
+Update the configuration file with the following content:
+
+........................................................................................
+server {
+    listen 80;
+    server_name 3.8.187.241 jedder.net www.jedder.net;
+
+    location / {
+        proxy_pass http://localhost:31321;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+
+    location /test {
+        proxy_pass http://localhost:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+}
+........................................................................................
+#listen 443 ssl; # managed by Certbot
+ /   ssl_certificate /etc/letsencrypt/live/jedder.net/fullchain.pem; # managed by Certbot
+  //  ssl_certificate_key /etc/letsencrypt/live/jedder.net/privkey.pem; # managed by Certbot
+   // include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+   // ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+........................................................................................
+
+
+sudo ln -s /etc/nginx/sites-available/jedder.net /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+
+sudo certbot --nginx -d jedder.net -d www.jedder.net
+sudo nano /etc/nginx/sites-available/jedder.net
+sudo rm /etc/nginx/sites-enabled/default
+sudo systemctl restart nginx  
+sudo systemctl reload nginx 
+
+#Access to kubernete dashoard
+sudo bash enable_kubernetes_dashboard.sh
+start proxy
+open the ports
+Modify the nginx file:
+sudo nano /etc/nginx/sites-available/jedder.net
+........................................................................................
+    location /dash {
+        proxy_pass http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/;
+        # Fix for the subpath issue
+        proxy_set_header X-Forwarded-Uri /dash;
+        rewrite ^/dash/(.*)$ /$1 break;
+        #/dash/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/login
+
+    }
+    
+........................................................................................
+
+sudo nano /etc/nginx/sites-available/jedder.net
+sudo systemctl reload nginx 
+sudo kubectl -n kubernetes-dashboard create token dashboard-adminuser
+
 
