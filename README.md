@@ -159,7 +159,7 @@ ________________________________________________________________________________
         #/dash/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/login
 
     }
-    
+
 ___________________________________________________________________________________________
 
 sudo nano /etc/nginx/sites-available/jedder.net
