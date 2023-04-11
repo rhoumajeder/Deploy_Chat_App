@@ -126,13 +126,13 @@ Before you begin, you need to have the following:
 
 Here are the steps to update the configuration file for `jedder.net` domain, enable HTTPS using certbot, and access Kubernetes dashboard:
 
-1. Open the Nginx configuration file
+20. Open the Nginx configuration file
 
     ```
     sudo nano /etc/nginx/sites-available/jedder.net
     ```
 
-2. Update the configuration file with the following content:
+21. Update the configuration file with the following content:
 
     ```
     server {
@@ -161,64 +161,64 @@ Here are the steps to update the configuration file for `jedder.net` domain, ena
     #   ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
     ```
 
-3. Create a symbolic link to enable the site
+22. Create a symbolic link to enable the site
 
     ```
     sudo ln -s /etc/nginx/sites-available/jedder.net /etc/nginx/sites-enabled/
     ```
 
-4. Check Nginx configuration
+23. Check Nginx configuration
 
     ```
     sudo nginx -t
     ```
 
-5. Reload Nginx configuration
+24. Reload Nginx configuration
 
     ```
     sudo systemctl reload nginx
     ```
 
-6. Obtain SSL certificate using Certbot
+25. Obtain SSL certificate using Certbot
 
     ```
     sudo certbot --nginx -d jedder.net -d www.jedder.net
     ```
 
-7. Open the Nginx configuration file again
+26. Open the Nginx configuration file again
 
     ```
     sudo nano /etc/nginx/sites-available/jedder.net
     ```
 
-8. Remove the default configuration
+27. Remove the default configuration
 
     ```
     sudo rm /etc/nginx/sites-enabled/default
     ```
 
-9. Restart Nginx
+28. Restart Nginx
 
     ```
     sudo systemctl restart nginx
     sudo systemctl reload nginx
     ```
 
-10. Enable Kubernetes dashboard
+29. Enable Kubernetes dashboard
 
     ```
     sudo bash enable_kubernetes_dashboard.sh
     ```
 
-11. Start the proxy and open the necessary ports
+30. Start the proxy and open the necessary ports
 
-12. Modify the Nginx configuration file again
+31. Modify the Nginx configuration file again
 
     ```
     sudo nano /etc/nginx/sites-available/jedder.net
     ```
 
-13. Add the following content to the configuration file:
+32. Add the following content to the configuration file:
 
     ```
     location /dash {
@@ -230,13 +230,13 @@ Here are the steps to update the configuration file for `jedder.net` domain, ena
     }
     ```
 
-14. Reload the Nginx configuration
+33. Reload the Nginx configuration
 
     ```
     sudo systemctl reload nginx
     ```
 
-15. Create a token for Kubernetes dashboard admin user
+34. Create a token for Kubernetes dashboard admin user
 
     ```
     sudo kubectl -n kubernetes-dashboard create token dashboard-adminuser
