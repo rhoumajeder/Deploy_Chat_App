@@ -7,163 +7,241 @@ This repository contains instructions and code to deploy a chat application on a
 Before you begin, you need to have the following:
 
 - An AWS account
-- Terraform installed on your machine
-- Ansible installed on your machine
-- A basic understanding of Kubernetes and Docker
+- A basic understanding of Terraform, Ansible, Kubernetes and Docker
 
 ## Steps
 
 1. Clone the repository
 
-git clone https://github.com/rhoumajeder/Deploy_Chat_App
-
+    ```
+    git clone https://github.com/rhoumajeder/Deploy_Chat_App
+    ```
 
 2. Create a Key on AWS
 
-Follow the AWS documentation to create a key pair.
+    Follow the AWS documentation to create a key pair.
 
 3. Initialize Terraform
 
-terraform init
+    ```
+    terraform init
+    ```
 
 4. Validate the Terraform configuration
 
-terraform validate
+    ```
+    terraform validate
+    ```
 
 5. Plan the Terraform configuration
 
-terraform plan
+    ```
+    terraform plan
+    ```
 
 6. Apply the Terraform configuration
 
-terraform apply
+    ```
+    terraform apply
+    ```
 
 7. Set the permissions for the private key
 
-chmod 400 RjeKeys.pem
+    ```
+    chmod 400 RjeKeys.pem
+    ```
 
 8. Connect to the master node
 
-Master_Node_ip
-sudo ssh -i "RjeKeys.pem" ubuntu@<master_node_ip>
+    ```
+    Master_Node_ip
+    sudo ssh -i "RjeKeys.pem" ubuntu@<master_node_ip>
+    ```
 
 9. Connect to the worker nodes
 
-Worker_Node1_ip
-sudo ssh -i "RjeKeys.pem" ubuntu@<worker_node1_ip>
+    ```
+    Worker_Node1_ip
+    sudo ssh -i "RjeKeys.pem" ubuntu@<worker_node1_ip>
 
-Woker_Node2_ip
-sudo ssh -i "RjeKeys.pem" ubuntu@<worker_node2_ip>
+    Woker_Node2_ip
+    sudo ssh -i "RjeKeys.pem" ubuntu@<worker_node2_ip>
+    ```
 
 10. Modify the Ansible host file
 
-Update the `inventory/vm-setup-playbook/hosts` file with the IP addresses of the Kubernetes cluster nodes.
+    Update the `inventory/vm-setup-playbook/hosts` file with the IP addresses of the Kubernetes cluster nodes.
 
 11. Install Ansible
 
-sudo apt install ansible -y
+    ```
+    sudo apt install ansible -y
+    ```
 
-13. Run the Ansible playbook
+12. Run the Ansible playbook
 
-ansible-playbook --inventory inventory/vm-setup-playbook/hosts vm-setup-playbook.yml
+    ```
+    ansible-playbook --inventory inventory/vm-setup-playbook/hosts vm-setup-playbook.yml
+    ```
 
-14. Set the Kubernetes config file permissions
+13. Set the Kubernetes config file permissions
 
-sudo chown -R $(whoami) $HOME/.kube
+    ```
+    sudo chown -R $(whoami) $HOME/.kube
+    ```
 
-15. Get the Kubernetes nodes, pods, and services
+14. Get the Kubernetes nodes, pods, and services
 
-sudo kubectl get nodes -o wide && sudo kubectl get pods && sudo kubectl get services
+    ```
+    sudo kubectl get nodes -o wide && sudo kubectl get pods && sudo kubectl get services
+    ```
 
-16. Create and execute the join command
+15. Create and execute the join command
 
-sudo kubeadm token create --print-join-command
+    ```
+    sudo kubeadm token create --print-join-command
+    ```
 
-17. Access the chat application via the public IP
+16. Access the chat application via the public IP
 
+    ```
+    sudo rsync -avz -e "ssh -i RjeKeys.pem" ../flaskapp ubuntu@<public_ip>:/home/ubuntu
+    python app.py
+    ```
 
-sudo rsync -avz -e "ssh -i RjeKeys.pem" ../flaskapp ubuntu@<public_ip>:/home/ubuntu
-python app.py
+    That's it! You now have a chat application running on a Kubernetes cluster using Terraform, AWS, and Ansible.
 
-That's it! You now have a chat application running on a Kubernetes cluster using Terraform, AWS, and Ansible.
+17. Deploy Rocket Chat application
 
+    ```
+    sudo rsync -avz -e "ssh -i RjeKeys.pem" ../rocketChatKubernetes ubuntu@3.8.187.241:/home/ubuntu
+    kubectl kustomize . | kubectl apply -f -
+    kubectl -n rocket-chat get pods
+    sudo kubectl -n rocket-chat get nodes -o wide && sudo kubectl -n rocket-chat get services
+    ```
 
-16. Deploy Rocket Chat application
+18. Access the chat application via the public IP and the port
 
-sudo rsync -avz -e "ssh -i RjeKeys.pem" ../rocketChatKubernetes ubuntu@3.8.187.241:/home/ubuntu
-kubectl kustomize . | kubectl apply -f -
-kubectl -n rocket-chat get pods
-sudo kubectl -n rocket-chat get nodes -o wide && sudo kubectl -n rocket-chat get services
+19. Link with a domain name (optional)
 
+Here are the steps to update the configuration file for `jedder.net` domain, enable HTTPS using certbot, and access Kubernetes dashboard:
 
-17. Access the chat application via the public IP and the port
+1. Open the Nginx configuration file
 
-18. Link with a domain name (optional)
+    ```
+    sudo nano /etc/nginx/sites-available/jedder.net
+    ```
 
+2. Update the configuration file with the following content:
 
-sudo nano /etc/nginx/sites-available/jedder.net
+    ```
+    server {
+        listen 80;
+        server_name 3.8.187.241 jedder.net www.jedder.net;
 
+        location / {
+            proxy_pass http://localhost:31321;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
 
-Update the configuration file with the following content:
+        location /test {
+            proxy_pass http://localhost:5000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
 
-___________________________________________________________________________________________
-server {
-    listen 80;
-    server_name 3.8.187.241 jedder.net www.jedder.net;
+    #listen 443 ssl; # managed by Certbot
+    #   ssl_certificate /etc/letsencrypt/live/jedder.net/fullchain.pem; # managed by Certbot
+    #   ssl_certificate_key /etc/letsencrypt/live/jedder.net/privkey.pem; # managed by Certbot
+    #   include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    #   ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+    ```
 
-    location / {
-        proxy_pass http://localhost:31321;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-}
+3. Create a symbolic link to enable the site
 
-    location /test {
-        proxy_pass http://localhost:5000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-}
-}
-___________________________________________________________________________________________
-#listen 443 ssl; # managed by Certbot
- /   ssl_certificate /etc/letsencrypt/live/jedder.net/fullchain.pem; # managed by Certbot
-  //  ssl_certificate_key /etc/letsencrypt/live/jedder.net/privkey.pem; # managed by Certbot
-   // include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-   // ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-___________________________________________________________________________________________
+    ```
+    sudo ln -s /etc/nginx/sites-available/jedder.net /etc/nginx/sites-enabled/
+    ```
 
+4. Check Nginx configuration
 
-sudo ln -s /etc/nginx/sites-available/jedder.net /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
+    ```
+    sudo nginx -t
+    ```
 
-sudo certbot --nginx -d jedder.net -d www.jedder.net
-sudo nano /etc/nginx/sites-available/jedder.net
-sudo rm /etc/nginx/sites-enabled/default
-sudo systemctl restart nginx  
-sudo systemctl reload nginx 
+5. Reload Nginx configuration
 
-#Access to kubernete dashoard
-sudo bash enable_kubernetes_dashboard.sh
-start proxy
-open the ports
-Modify the nginx file:
-sudo nano /etc/nginx/sites-available/jedder.net
-___________________________________________________________________________________________
+    ```
+    sudo systemctl reload nginx
+    ```
+
+6. Obtain SSL certificate using Certbot
+
+    ```
+    sudo certbot --nginx -d jedder.net -d www.jedder.net
+    ```
+
+7. Open the Nginx configuration file again
+
+    ```
+    sudo nano /etc/nginx/sites-available/jedder.net
+    ```
+
+8. Remove the default configuration
+
+    ```
+    sudo rm /etc/nginx/sites-enabled/default
+    ```
+
+9. Restart Nginx
+
+    ```
+    sudo systemctl restart nginx
+    sudo systemctl reload nginx
+    ```
+
+10. Enable Kubernetes dashboard
+
+    ```
+    sudo bash enable_kubernetes_dashboard.sh
+    ```
+
+11. Start the proxy and open the necessary ports
+
+12. Modify the Nginx configuration file again
+
+    ```
+    sudo nano /etc/nginx/sites-available/jedder.net
+    ```
+
+13. Add the following content to the configuration file:
+
+    ```
     location /dash {
         proxy_pass http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/;
         # Fix for the subpath issue
         proxy_set_header X-Forwarded-Uri /dash;
         rewrite ^/dash/(.*)$ /$1 break;
         #/dash/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/login
-
     }
+    ```
 
-___________________________________________________________________________________________
+14. Reload the Nginx configuration
 
-sudo nano /etc/nginx/sites-available/jedder.net
-sudo systemctl reload nginx 
-sudo kubectl -n kubernetes-dashboard create token dashboard-adminuser
+    ```
+    sudo systemctl reload nginx
+    ```
+
+15. Create a token for Kubernetes dashboard admin user
+
+    ```
+    sudo kubectl -n kubernetes-dashboard create token dashboard-adminuser
+    ```
+
+
 
 
