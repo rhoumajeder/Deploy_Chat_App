@@ -106,7 +106,7 @@ sudo nano /etc/nginx/sites-available/jedder.net
 
 Update the configuration file with the following content:
 
-........................................................................................
+___________________________________________________________________________________________
 server {
     listen 80;
     server_name 3.8.187.241 jedder.net www.jedder.net;
@@ -125,13 +125,13 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 }
 }
-........................................................................................
+___________________________________________________________________________________________
 #listen 443 ssl; # managed by Certbot
  /   ssl_certificate /etc/letsencrypt/live/jedder.net/fullchain.pem; # managed by Certbot
   //  ssl_certificate_key /etc/letsencrypt/live/jedder.net/privkey.pem; # managed by Certbot
    // include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
    // ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-........................................................................................
+___________________________________________________________________________________________
 
 
 sudo ln -s /etc/nginx/sites-available/jedder.net /etc/nginx/sites-enabled/
@@ -150,7 +150,7 @@ start proxy
 open the ports
 Modify the nginx file:
 sudo nano /etc/nginx/sites-available/jedder.net
-........................................................................................
+___________________________________________________________________________________________
     location /dash {
         proxy_pass http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/;
         # Fix for the subpath issue
@@ -160,7 +160,7 @@ sudo nano /etc/nginx/sites-available/jedder.net
 
     }
     
-........................................................................................
+___________________________________________________________________________________________
 
 sudo nano /etc/nginx/sites-available/jedder.net
 sudo systemctl reload nginx 
