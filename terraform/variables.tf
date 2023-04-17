@@ -67,9 +67,7 @@ resource "aws_instance" "rockatapp" {
     tags = {
     Name = "RockatApp"
   }
-  
  
-
 }
 
 
@@ -82,10 +80,7 @@ resource "aws_subnet" "this" {
   tags = {
     Name = "rockat-app-subnet"
   }
-  
-
-
-
+ 
 }
 
 # Output resource for instance IP addresses
@@ -97,10 +92,7 @@ resource "aws_subnet" "this" {
     server_2 = aws_instance.rockatapp[1].public_ip
     server_3 = aws_instance.rockatapp[2].public_ip
   }
-  
  
-  
-
 }
 
 # DNS resources
@@ -133,6 +125,4 @@ resource "aws_subnet" "this" {
 #     create_before_destroy = true
 #   }
 # }
-
-
-
+ 
